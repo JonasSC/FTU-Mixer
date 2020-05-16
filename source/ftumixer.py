@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright 2013 Jonas Schulte-Coerne
+# Copyright 2020 Asbjorn Saebo
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -507,7 +508,7 @@ class Gui(object):
 		text = []
 		text.append("Fast Track Ultra Mixer")
 		text.append("")
-		text.append("(c) Copyright Jonas Schulte-Coerne")
+		text.append("(c) Copyright Jonas Schulte-Coerne, Asbjorn Saebo")
 		text.append("This program is licensed under the terms of the Apache License, version 2.")
 		text.append("For more information about the license see: http://www.apache.org/licenses/LICENSE-2.0")
 		text.append("")
