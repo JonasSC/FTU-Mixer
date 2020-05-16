@@ -56,12 +56,12 @@ class Mixer:
 		                                 can be done with JACK
 		"""
 		self.__card_index = card_index
-		# poll for mixer value changes
 		self.__observers = []	# a list of functions that are called when a mixer value changes
+		# poll for mixer value changes
 		self.__descriptors_to_routes = {}
 		self.__poll = select.epoll()
-		self.__polling_active = True
 		self.__polling_thread = threading.Thread(target=self.__PollForChanges)
+		self.__polling_thread.daemon = True
 		self.__polling_thread.start()
 		# create mixer objects
 		regex_analog = re.compile("AIn\d - Out\d")
@@ -80,13 +80,6 @@ class Mixer:
 			self.DisableEffects()
 		if mute_most_digital_routes:
 			self.MuteMostDigitalRoutes()
-
-	def Destroy(self):
-		"""
-		Stops the polling thread, that polls for changes of ALSA controls.
-		"""
-		self.__polling_active = False
-		self.__polling_thread.join()
 
 	def GetNumberOfChannels(self):
 		"""
@@ -242,7 +235,7 @@ class Mixer:
 		ALSA controls, so this program can update itself, when an external program
 		changes a control.
 		"""
-		while self.__polling_active:
+		while True:  # this is a daemon thread, that is killed automatically in the end
 			changed_analog_routes = []
 			changed_digital_routes = []
 			for d in self.__poll.poll(700):
