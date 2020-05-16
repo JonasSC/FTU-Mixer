@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-# Copyright 2013 Jonas Schulte-Coerne
-# Copyright 2020 Asbjorn Saebo
+# Copyright 2013-2020 Jonas Schulte-Coerne
+# Copyright 2020 Grant Diffey
+# Copyright 2020 Asbjørn Sæbø
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,7 +30,7 @@ import wx
 import alsaaudio
 
 
-class Mixer(object):
+class Mixer:
 	"""
 	This class is a wraps the interaction with ALSA.
 	It is responsible for:
@@ -41,6 +42,7 @@ class Mixer(object):
 	integer starting with 0. This differs from the GUI and the names of the
 	Fast Track Ultra's ALSA controls, where channel numbers start with 1.
 	"""
+
 	def __init__(self, card_index, disable_effects, mute_most_digital_routes):
 		"""
 		@param card_index: the card index of the Fast Track Ultra that shall be
@@ -256,8 +258,7 @@ class Mixer(object):
 					o(changed_analog_routes, changed_digital_routes)
 
 
-
-class Gui(object):
+class Gui:
 	"""
 	This class sets up the GUI for the mixer.
 	It is responsible for:
@@ -266,6 +267,7 @@ class Gui(object):
 	  - running the GUI's main loop
 	For information about how to use the GUI, see the README file.
 	"""
+
 	def __init__(self, mixer, config):
 		"""
 		@param mixer: a Mixer object
@@ -274,7 +276,7 @@ class Gui(object):
 		self.__mixer = mixer
 		self.__config = config
 		self.__config.SetGui(self)
-		self.__app = wx.PySimpleApp()
+		self.__app = wx.App()
 		self.__frame = wx.Frame(parent=None, title="Fast Track Ultra Mixer", size=(480, 320))
 		self.__app.SetTopWindow(self.__frame)
 		# menu
@@ -282,13 +284,13 @@ class Gui(object):
 		self.__frame.SetMenuBar(menubar)
 		filemenu = wx.Menu()
 		menubar.Append(filemenu, "File")
-		loaditem = filemenu.Append(id=wx.ID_ANY, text="Load config")
+		loaditem = filemenu.Append(id=wx.ID_ANY, item="Load config")
 		self.__frame.Bind(wx.EVT_MENU, self.__OnLoadConfig, loaditem)
-		saveitem = filemenu.Append(id=wx.ID_ANY, text="Save config")
+		saveitem = filemenu.Append(id=wx.ID_ANY, item="Save config")
 		self.__frame.Bind(wx.EVT_MENU, self.__OnSaveConfig, saveitem)
 		helpmenu = wx.Menu()
 		menubar.Append(helpmenu, "Help")
-		infoitem = helpmenu.Append(id=wx.ID_ANY, text="Info")
+		infoitem = helpmenu.Append(id=wx.ID_ANY, item="Info")
 		self.__frame.Bind(wx.EVT_MENU, self.__OnInfo, infoitem)
 		# notebook
 		mainsizer = wx.BoxSizer(wx.VERTICAL)
@@ -449,12 +451,13 @@ class Gui(object):
 		This method can be called from a different thread, as all accesses to the
 		GUI are encapsulated in a nested function that is called with wx.CallAfter
 		"""
+
 		def worker():
 			for o, i in changed_analog_routes:
 				volume = self.__mixer.GetVolume(output_channel=o, input_channel=i)
 				slider, vlabel = self.__hardwarerouting_sliders[o][i]
 				if volume != slider.GetValue():
-#					print "A change in route from input %i to output %i" % (i, o)
+#					print("A change in route from input %i to output %i" % (i, o))
 					slider.SetValue(volume)
 					vlabel.SetLabel(str(volume))
 			for o, i in changed_digital_routes:
@@ -466,6 +469,7 @@ class Gui(object):
 					self.__masterslider.SetValue(int(round(mastervolume)))
 					self.__masterlabel.SetLabel(str(self.__masterslider.GetValue()))
 					break
+
 		wx.CallAfter(worker)
 
 	def __OnLink(self, event, output_channel, choice):
@@ -508,7 +512,7 @@ class Gui(object):
 		text = []
 		text.append("Fast Track Ultra Mixer")
 		text.append("")
-		text.append("(c) Copyright Jonas Schulte-Coerne, Asbjorn Saebo")
+		text.append("(c) Copyright Jonas Schulte-Coerne, Grant Diffey, Asbjørn Sæbø")
 		text.append("This program is licensed under the terms of the Apache License, version 2.")
 		text.append("For more information about the license see: http://www.apache.org/licenses/LICENSE-2.0")
 		text.append("")
@@ -553,8 +557,7 @@ class Gui(object):
 		self.__mixer.MuteMostDigitalRoutes()
 
 
-
-class Config(object):
+class Config:
 	"""
 	This class wraps the config file handling.
 	It is responsible for:
@@ -563,6 +566,7 @@ class Config(object):
 	  - loading a config file to a dictionary and passing that to the mixer and
 	    the GUI
 	"""
+
 	def __init__(self, mixer):
 		"""
 		@param mixer: a Mixer instance
@@ -602,7 +606,7 @@ class Config(object):
 		for s in configdict:
 			parser.add_section(s)
 			for v in configdict[s]:
-				parser.set(s, v, configdict[s][v])
+				parser.set(s, v, str(configdict[s][v]))
 		with open(filename, 'w') as configfile:
 			parser.write(configfile)
 
@@ -613,43 +617,41 @@ class Config(object):
 		self.__gui = gui
 
 
-
 if __name__ == "__main__":
 	card_index = None
 	i = 0
 	for c in alsaaudio.cards():
-		if c == "Ultra" or c == "F8R":
+		if c in ("Ultra", "F8R"):
 			card_index = i
+			print(f"using card {card_index}")
+			# parse command line arguments
+			parser = argparse.ArgumentParser(description="A little mixer for the M-Audio Fast Track Ultra audio interfaces.")
+			parser.add_argument("-c, --card", dest="card_index", action="store", default=card_index, help="The card index of the interface that shall be controlled.")
+			parser.add_argument("-l, --load-config", dest="config", action="store", default="", help="A configuration file that shall be loaded on startup.")
+			parser.add_argument("-X, --no-gui", dest="show_gui", action="store_false", default=True, help="Do not show the mixer GUI.")
+			parser.add_argument("-F, --dont-disable-fx", dest="disable_effects", action="store_false", default=True, help="Do not disable all effects on startup.")
+			parser.add_argument("-M, --dont-mute-most-digital-outputs", dest="mute_most_digital_routes", action="store_false", default=True, help="Do not mute most digital outputs on startup. Without this all digital outputs will be muted except for 'DIn1 - Out1', 'Din2 - Out2'... so the routing of the digital signals can be done with JACK.")
+			parser.add_argument("-m, --mute-hardware-routes", dest="mute_hardware_routes", action="store_true", default=False, help="Mute all hardware routes of the analog signals.")
+			parser.add_argument("-p, --pass-through-inputs", dest="pass_through_inputs", action="store_true", default=False, help="Route all analog inputs to their respective outputs. This does not affect other routes.")
+			args = parser.parse_args()
+			# setup necessary objects
+			mixer = Mixer(card_index=args.card_index, disable_effects=args.disable_effects, mute_most_digital_routes=args.mute_most_digital_routes)
+			config = Config(mixer=mixer)
+			if args.show_gui:
+				gui = Gui(mixer=mixer, config=config)
+			# configure objects according to the command line arguments
+			if args.mute_hardware_routes:
+				gui.MuteHardwareRoutes()
+			if args.pass_through_inputs:
+				gui.PassThroughInputs()
+			configpath = os.path.normpath(os.path.abspath(os.path.expanduser(os.path.expandvars(args.config))))
+			if os.path.exists(configpath):
+				config.Load(filename=configpath)
+			# run the GUI if necessary
+			if args.show_gui:
+				gui.MainLoop()
+			break
 		i += 1
-	if card_index is None:
-		print "No M-Audio Fast Track Ultra or Ultra 8R found. Exiting..."
 	else:
-		# parse command line arguments
-		parser = argparse.ArgumentParser(description="A little mixer for the M-Audio Fast Track Ultra audio interfaces.")
-		parser.add_argument("-c, --card", dest="card_index", action="store", default=card_index, help="The card index of the interface that shall be controlled.")
-		parser.add_argument("-l, --load-config", dest="config", action="store", default="", help="A configuration file that shall be loaded on startup.")
-		parser.add_argument("-X, --no-gui", dest="show_gui", action="store_false", default=True, help="Do not show the mixer GUI.")
-		parser.add_argument("-F, --dont-disable-fx", dest="disable_effects", action="store_false", default=True, help="Do not disable all effects on startup.")
-		parser.add_argument("-M, --dont-mute-most-digital-outputs", dest="mute_most_digital_routes", action="store_false", default=True, help="Do not mute most digital outputs on startup. Without this all digital outputs will be muted except for 'DIn1 - Out1', 'Din2 - Out2'... so the routing of the digital signals can be done with JACK.")
-		parser.add_argument("-m, --mute-hardware-routes", dest="mute_hardware_routes", action="store_true", default=False, help="Mute all hardware routes of the analog signals.")
-		parser.add_argument("-p, --pass-through-inputs", dest="pass_through_inputs", action="store_true", default=False, help="Route all analog inputs to their respective outputs. This does not affect other routes.")
-		args = parser.parse_args()
-		# setup necessary objects
-		mixer = Mixer(card_index=args.card_index, disable_effects=args.disable_effects, mute_most_digital_routes=args.mute_most_digital_routes)
-		config = Config(mixer=mixer)
-		if args.show_gui:
-			gui = Gui(mixer=mixer, config=config)
-		# configure objects according to the command line arguments
-		if args.mute_hardware_routes:
-			gui.MuteHardwareRoutes()
-		if args.pass_through_inputs:
-			gui.PassThroughInputs()
-		configpath = os.path.normpath(os.path.abspath(os.path.expanduser(os.path.expandvars(args.config))))
-		if os.path.exists(configpath):
-			config.Load(filename=configpath)
-		# run the GUI if necessary
-		if args.show_gui:
-			gui.MainLoop()
-		# clean up
-		mixer.Destroy()
+		print("No M-Audio Fast Track Ultra or Ultra 8R found. Exiting...")
 

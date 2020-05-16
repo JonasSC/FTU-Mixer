@@ -19,8 +19,8 @@ and all the others who help to make Linux support multichannel USB audio interfa
 ## Requirements
 As FTU-Mixer is a mixer for ALSA, it might be limited to Linux based operating
 systems only.  
-It is written and tested with Python 2.7. Hopefully, other versions work as
-well, but they have not been tested.  
+It is written and tested with Python 3.8. Hopefully, other versions work as
+well, but they have not been tested.
 FTU-Mixer uses [wxPython](http://www.wxpython.org/) for the GUI and
 [pyalsaaudio](http://pyalsaaudio.sourceforge.net/) as the wrapper for the ALSA
 functionalities.
