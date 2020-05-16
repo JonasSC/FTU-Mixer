@@ -617,11 +617,11 @@ if __name__ == "__main__":
 	card_index = None
 	i = 0
 	for c in alsaaudio.cards():
-		if c == "Ultra":
+		if c == "Ultra" or c == "F8R":
 			card_index = i
 		i += 1
 	if card_index is None:
-		print "No M-Audio Fast Track Ultra found. Exiting..."
+		print "No M-Audio Fast Track Ultra or Ultra 8R found. Exiting..."
 	else:
 		# parse command line arguments
 		parser = argparse.ArgumentParser(description="A little mixer for the M-Audio Fast Track Ultra audio interfaces.")

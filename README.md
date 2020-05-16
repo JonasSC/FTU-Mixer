@@ -26,8 +26,8 @@ FTU-Mixer uses [wxPython](http://www.wxpython.org/) for the GUI and
 functionalities.
 
 FTU-Mixer has been developed and tested with an ordinary (non 8R) M-Audio Fast
-Track Ultra. It should work with the Fast Track Ultra 8R, but that has not been
-tested.
+Track Ultra. The FTU-Mixer will also recognize, and work with, the Fast Track
+Ultra 8R, but that combination has not been thoroughly tested.
 
 
 ## Known issues
