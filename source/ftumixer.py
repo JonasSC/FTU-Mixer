@@ -105,7 +105,7 @@ class Mixer:
 		if digital:
 			return self.__digital_routes[output_channel][input_channel].getvolume()[0]
 		else:
-			return self.__analog_routes[output_channel][input_channel].getvolume()[0]
+			return self.__analog_routes[output_channel][input_channel].getvolume(alsaaudio.PCM_CAPTURE)[0]
 
 	def SetVolume(self, value, output_channel, input_channel, digital=False):
 		"""
@@ -116,7 +116,7 @@ class Mixer:
 		if digital:
 			self.__digital_routes[output_channel][input_channel].setvolume(value, 0)
 		else:
-			self.__analog_routes[output_channel][input_channel].setvolume(value, 0)
+			self.__analog_routes[output_channel][input_channel].setvolume(value, 0, alsaaudio.PCM_CAPTURE)
 
 	def AddObserver(self, function):
 		"""
