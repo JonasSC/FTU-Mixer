@@ -619,7 +619,7 @@ if __name__ == "__main__":
 			print(f"using card {card_index}")
 			# parse command line arguments
 			parser = argparse.ArgumentParser(description="A little mixer for the M-Audio Fast Track Ultra audio interfaces.")
-			parser.add_argument("-c, --card", dest="card_index", action="store", default=card_index, help="The card index of the interface that shall be controlled.")
+			parser.add_argument("-c, --card", dest="card_index", action="store", type=int, default=card_index, help="The card index of the interface that shall be controlled.")
 			parser.add_argument("-l, --load-config", dest="config", action="store", default="", help="A configuration file that shall be loaded on startup.")
 			parser.add_argument("-X, --no-gui", dest="show_gui", action="store_false", default=True, help="Do not show the mixer GUI.")
 			parser.add_argument("-F, --dont-disable-fx", dest="disable_effects", action="store_false", default=True, help="Do not disable all effects on startup.")
